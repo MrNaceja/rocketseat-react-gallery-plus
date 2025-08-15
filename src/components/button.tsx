@@ -1,9 +1,11 @@
-import React from "react";
-import Icon from "./icon";
-import Text from "./text";
-import {tv, type VariantProps} from "tailwind-variants";
-import SpinnerIcon from "../assets/icons/spinner.svg?react";
 import cx from "classnames";
+import React from "react";
+import {tv, type VariantProps} from "tailwind-variants";
+
+import { Icon } from "@/components/icon";
+import { Text } from "@/components/text";
+
+import SpinnerIcon from "../assets/icons/spinner.svg?react";
 
 export const buttonVariants = tv({
 	base: "flex items-center justify-center cursor-pointer transition rounded group gap-1",
@@ -84,7 +86,7 @@ interface ButtonProps
 	handling?: boolean;
 }
 
-export default function Button({
+export function Button({
 	variant,
 	size,
 	disabled,

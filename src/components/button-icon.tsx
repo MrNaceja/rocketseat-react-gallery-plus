@@ -1,6 +1,8 @@
 import React from "react";
-import Icon from "./icon";
 import {tv, type VariantProps} from "tailwind-variants";
+
+import { Icon } from "@/components/icon";
+
 import SpinnerIcon from "../assets/icons/spinner.svg?react";
 
 export const buttonIconVariants = tv({
@@ -53,7 +55,7 @@ interface ButtonIconProps
 	handling?: boolean;
 }
 
-export default function ButtonIcon({
+export function ButtonIcon({
 	variant,
 	size,
 	disabled,

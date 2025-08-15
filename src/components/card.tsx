@@ -1,5 +1,5 @@
-import {type VariantProps, tv} from "tailwind-variants";
 import React from "react";
+import {tv,type VariantProps} from "tailwind-variants";
 
 export const cardVariants = tv({
 	base: `
@@ -28,7 +28,7 @@ interface CardProps
 	as?: keyof React.JSX.IntrinsicElements;
 }
 
-export default function Card({
+export function Card({
 	as = "div",
 	size,
 	variant,
