@@ -3,6 +3,7 @@ import cx from "classnames"
 import type { ComponentProps } from "react"
 
 import CloseIcon from "@/assets/icons/x.svg?react"
+import { Divider } from "@/components/divider"
 import { Icon } from "@/components/icon"
 import { Text } from "@/components/text"
 
@@ -23,7 +24,7 @@ function Content(props: RadixDialog.DialogContentProps) {
                 {...props}
                 className={`
                     fixed top-1/2 left-1/2 -translate-1/2 bg-background-primary rounded-lg p-8
-                    flex flex-col gap-5 border border-border-primary/50
+                    flex flex-col border border-border-primary/50
 
                     data-[state=open]:animate-in
                     data-[state=open]:fade-in-0
@@ -48,24 +49,36 @@ function Title({ children, ...titleProps }: RadixDialog.DialogTitleProps) {
 
 function Close(props: RadixDialog.DialogCloseProps) {
     return (
-        <RadixDialog.Close {...props}>
+        <Dismiss {...props}>
             <Icon
                 svg={CloseIcon}
                 className="fill-placeholder hover:fill-heading"
             />
-        </RadixDialog.Close>
+        </Dismiss>
+    )
+}
+
+function Dismiss(props: RadixDialog.DialogCloseProps) {
+    return (
+        <RadixDialog.Close {...props} />
     )
 }
 
 function Header({ className, ...headerProps }: ComponentProps<"header">) {
     return (
-        <header className={cx("flex items-center gap-3 justify-between pb-2.5 border-b border-border-primary", className)} {...headerProps} />
+        <>
+            <header className={cx("flex items-center gap-3 justify-between", className)} {...headerProps} />
+            <Divider className="my-2.5" />
+        </>
     )
 }
 
 function Footer({ className, ...footerProps }: ComponentProps<"footer">) {
     return (
-        <footer className={cx("flex items-center gap-3 justify-end pt-2.5 border-t border-border-primary", className)} {...footerProps} />
+        <>
+            <Divider className="my-2.5" />
+            <footer className={cx("flex items-center gap-3 justify-end", className)} {...footerProps} />
+        </>
     )
 }
 
@@ -79,6 +92,7 @@ export const Dialog = {
     Root: RadixDialog.Root,
     Trigger: RadixDialog.Trigger,
     Close,
+    Dismiss,
     Title,
     Header,
     Body,
