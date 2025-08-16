@@ -1,4 +1,4 @@
-import React from "react";
+import React, { type ComponentProps } from "react";
 import {tv, type VariantProps} from "tailwind-variants";
 
 export const iconVariants = tv({
@@ -18,6 +18,8 @@ interface IconProps
 		VariantProps<typeof iconVariants> {
 	svg: React.FC<React.ComponentProps<"svg">>;
 }
+
+export type IconType = ComponentProps<typeof Icon>["svg"]
 
 export function Icon({
 	svg: SvgComponent,
