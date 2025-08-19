@@ -17,7 +17,7 @@ export function TextField({ leadingIcon: LeadingIcon, className, ...inputProps }
                     />
                 )
             }
-            <input type="text" {...inputProps} className="size-full ring-0 outline-0 caret-placeholder placeholder:text-placeholder placeholder:text-sm" />
+            <input type="text" {...inputProps} className="text-accent-paragraph size-full ring-0 outline-0 caret-placeholder placeholder:text-placeholder placeholder:text-sm" />
         </div>
     )
 }
