@@ -8,7 +8,7 @@ interface TextFieldProps extends ComponentProps<'input'> {
 }
 export function TextField({ leadingIcon: LeadingIcon, className, ...inputProps }: TextFieldProps) {
     return (
-        <div className={cx("flex items-center p-3 rounded-sm border border-border-primary w-fit focus-within:border-border-active gap-3", className)}>
+        <div className={cx("flex items-center p-2 rounded-sm border border-border-primary w-fit focus-within:border-border-active gap-3", className)}>
             {
                 LeadingIcon && (
                     <Icon

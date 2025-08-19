@@ -15,7 +15,7 @@ export function Header() {
                     svg={LogoIcon}
                 />
             </IndexLink>
-            <TextField className="flex-1" leadingIcon={SearchIcon} />
+            <TextField className="flex-1" leadingIcon={SearchIcon} placeholder="Buscar fotos..."/>
             <Divider orientation="vertical" className="h-8"/>
             <aside className="flex items-center gap-3">
                 <Button variant="primary">Nova fota</Button>
