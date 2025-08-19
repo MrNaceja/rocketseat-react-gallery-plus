@@ -2,7 +2,7 @@ import { type ComponentProps, useId } from "react";
 import { tv, type VariantProps } from "tailwind-variants";
 
 import CheckIcon from "@/assets/icons/check.svg?react"
-import { Icon } from "@/components/icon";
+import { Icon } from "@/components/ui/icon";
 
 const checkboxWrapperVariants = tv({
     base: "rounded-xs border border-border-primary has-checked:border-accent-brand has-checked:bg-accent-brand grid place-items-center group hover:border-border-active",

@@ -2,8 +2,8 @@ import cx from "classnames";
 import React from "react";
 import {tv, type VariantProps} from "tailwind-variants";
 
-import { Skeleton } from "@/components/skeleton";
-import { Text } from "@/components/text";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Text } from "@/components/ui/text";
 
 
 export const badgeVariants = tv({

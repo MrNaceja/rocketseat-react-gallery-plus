@@ -3,8 +3,8 @@ import React from "react";
 import {tv, type VariantProps} from "tailwind-variants";
 
 import SpinnerIcon from "@/assets/icons/spinner.svg?react";
-import { Icon, type IconType } from "@/components/icon";
-import { Text } from "@/components/text";
+import { Icon, type IconType } from "@/components/ui/icon";
+import { Text } from "@/components/ui/text";
 
 export const buttonVariants = tv({
 	base: "flex items-center justify-center cursor-pointer transition rounded group gap-1",

@@ -3,9 +3,9 @@ import cx from "classnames"
 import type { ComponentProps } from "react"
 
 import CloseIcon from "@/assets/icons/x.svg?react"
-import { Divider } from "@/components/divider"
-import { Icon } from "@/components/icon"
-import { Text } from "@/components/text"
+import { Divider } from "@/components/ui/divider"
+import { Icon } from "@/components/ui/icon"
+import { Text } from "@/components/ui/text"
 
 function Content(props: RadixDialog.DialogContentProps) {
     return (
