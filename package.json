@@ -19,6 +19,8 @@
     "@hookform/resolvers": "^5.2.1",
     "@radix-ui/react-dialog": "^1.1.15",
     "@tailwindcss/vite": "^4.1.10",
+    "@tanstack/react-router": "^1.131.19",
+    "@tanstack/react-router-devtools": "^1.131.19",
     "classnames": "^2.5.1",
     "fastify": "^4.24.3",
     "react": "^19.1.0",
@@ -30,6 +32,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
+    "@tanstack/router-plugin": "^1.131.19",
     "@types/node": "^20.10.0",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",

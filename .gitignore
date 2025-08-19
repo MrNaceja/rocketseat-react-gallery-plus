@@ -25,6 +25,7 @@ dist-ssr
 
 # Data folder
 data/
+.tanstack
 
 # Server build output
 server/dist/
