@@ -7,7 +7,7 @@ import { Divider } from "@/components/ui/divider"
 import { Icon } from "@/components/ui/icon"
 import { Text } from "@/components/ui/text"
 
-function Content(props: RadixDialog.DialogContentProps) {
+function Content({ className, ...contentProps }: RadixDialog.DialogContentProps) {
     return (
         <RadixDialog.Portal>
             <RadixDialog.Overlay
@@ -21,8 +21,8 @@ function Content(props: RadixDialog.DialogContentProps) {
                 `}
             />
             <RadixDialog.Content
-                {...props}
-                className={`
+                {...contentProps}
+                className={cx(`
                     fixed top-1/2 left-1/2 -translate-1/2 bg-background-primary rounded-lg p-8
                     flex flex-col border border-border-primary/50
 
@@ -33,7 +33,7 @@ function Content(props: RadixDialog.DialogContentProps) {
                     data-[state=closed]:animate-out
                     data-[state=closed]:fade-out-0
                     data-[state=closed]:slide-out-from-bottom-25
-                `}
+                `, className)}
             />
         </RadixDialog.Portal>
     )

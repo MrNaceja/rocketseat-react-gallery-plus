@@ -11,7 +11,7 @@ import UploadIcon from "@/assets/icons/upload-file.svg?react";
 import { Icon } from "@/components/ui/icon";
 import { Text, textVariants } from "@/components/ui/text";
 
-const acceptedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+export const acceptedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 
 type UploadImageFieldContextState = {
     inputRef: RefObject<HTMLInputElement | null>;
