@@ -16,7 +16,7 @@ export const buttonIconVariants = tv({
 			md: "w-10 h-10 p-2 rounded",
 		},
 		disabled: {
-			true: "opacity-50 pointer-events-none",
+			true: "opacity-50 cursor-not-allowed",
 		},
 		handling: {
 			true: "pointer-events-none",
