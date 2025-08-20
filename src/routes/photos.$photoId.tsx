@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import type { ComponentProps } from "react"
 
 export const Route = createFileRoute('/photos/$photoId')({
     component: function PhotoDetailsPage() {
@@ -12,9 +11,3 @@ export const Route = createFileRoute('/photos/$photoId')({
         )
     },
 })
-
-export function PhotoDetailsLink(props: ComponentProps<typeof Route.Link>) {
-    return <Route.Link {...props} to={Route.to} />
-}
-
-

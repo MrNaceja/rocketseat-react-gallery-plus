@@ -7,7 +7,7 @@ import { Container } from "@/components/ui/container";
 import { Divider } from "@/components/ui/divider";
 import { Icon } from "@/components/ui/icon";
 import { TextField } from "@/components/ui/text-field";
-import { IndexLink } from "@/routes";
+import { Route as IndexRoute } from "@/routes";
 
 export function Header() {
     const [search, setSearch] = useState("")
@@ -17,11 +17,11 @@ export function Header() {
     }
     return (
         <Container as="header" className="py-9 flex items-center gap-6">
-            <IndexLink>
+            <IndexRoute.Link to={IndexRoute.to}>
                 <Icon
                     svg={LogoIcon}
                 />
-            </IndexLink>
+            </IndexRoute.Link>
             <TextField 
                 className="flex-1" 
                 leadingIcon={SearchIcon} 
@@ -31,7 +31,7 @@ export function Header() {
             />
             <Divider orientation="vertical" className="h-8"/>
             <aside className="flex items-center gap-3">
-                <Button variant="primary">Nova fota</Button>
+                <Button variant="primary">Nova foto</Button>
                 <Button variant="secondary">Criar album</Button>
             </aside>
         </Container>
