@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
+import { AlbumsSelectorFilter } from "@/components/albums-selector-filter"
 import { PhotoCard } from "@/components/photo-card"
 import { Text } from "@/components/ui/text"
 
@@ -17,6 +18,7 @@ export const Route = createFileRoute('/')({
   component: function IndexPage() {
     return (
       <section className="flex flex-col gap-6">
+        <AlbumsSelectorFilter />
         <Text variant="label-small" className="text-accent-span text-right">Total: {photos.length}</Text>
         <div className="grid grid-cols-5 gap-9">
           {
