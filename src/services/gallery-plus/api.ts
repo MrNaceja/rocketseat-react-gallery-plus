@@ -1,9 +1,19 @@
-import axios from "axios"
+import axios from "axios";
 
-import { env } from "@/env"
+import { env } from "@/env";
 
 export const api = axios.create({
-    baseURL: env.VITE_GALLERY_PLUS_API_SERVICE_URL
-})
+  baseURL: env.VITE_GALLERY_PLUS_API_SERVICE_URL,
+});
 
-api.interceptors.response.use(res => res.data)
+if (env.VITE_DEV_GALLERY_PLUS_API_SERVICE_DELAY_IN_SECONDS > 0) {
+  api.interceptors.request.use(
+    (res) =>
+      new Promise((ok) =>
+        setTimeout(
+          () => ok(res),
+          env.VITE_DEV_GALLERY_PLUS_API_SERVICE_DELAY_IN_SECONDS * 1000
+        )
+      )
+  );
+}

@@ -8,10 +8,12 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Divider } from "@/components/ui/divider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Text } from "@/components/ui/text"
+import { useFetchAlbumsQuery } from "@/hooks/use-fetch-albums-query"
 
 export const Route = createFileRoute('/photos/$photoId')({
     component: function PhotoDetailsPage() {
         const { photoId } = Route.useParams()
+        const { albums, isLoading: isLoadingAlbums } = useFetchAlbumsQuery()
 
         const photo = {
             id: photoId,
@@ -19,7 +21,7 @@ export const Route = createFileRoute('/photos/$photoId')({
             url: "https://picsum.photos/600/400",
             albums: Array.from({ length: 5 }).map((_, idxAlbum) => ({
                 id: String(idxAlbum + 1),
-                name: `Album ${idxAlbum + 1}`
+                title: `Album ${idxAlbum + 1}`
             }))
         }
 
@@ -76,17 +78,17 @@ export const Route = createFileRoute('/photos/$photoId')({
                         <Text variant="heading-small">Albums</Text>
                         <ul className="space-y-5">
                             {
-                                isLoading
+                                isLoadingAlbums
                                     ? (
                                         Array.from({ length: 4 }).map((_, idx) => (
                                             <Skeleton key={idx} rounded="sm" className="h-16 w-full"/>
                                         ))
                                     )
                                     : (
-                                        photo.albums.map((album) => (
+                                        albums.map((album) => (
                                             <li key={album.id} className="flex flex-col gap-5">
                                                 <span className="flex items-center justify-between gap-3">
-                                                    <Text variant="paragraph-medium" className="text-accent-paragraph">{album.name}</Text>
+                                                    <Text variant="paragraph-medium" className="text-accent-paragraph">{album.title}</Text>
                                                     <Checkbox />
                                                 </span>
                                                 <Divider orientation="horizontal" />

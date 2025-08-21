@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Text } from "@/components/ui/text"
 import { Route as PhotoDetailsRoute } from "@/routes/photos.$photoId"
+import type { Photo } from "@/services/gallery-plus/photo.service"
 
 const AMOUNT_DISPLAYED_ALBUMS = 2
 
@@ -25,7 +26,7 @@ export function PhotoCard({ photo }: PhotoCardProps) {
                 <Text variant="label-medium" className="text-accent-paragraph truncate">{photo.name}</Text>
                 <div className="flex flex-wrap gap-2 items-center">
                     {displayedAlbums.map(album => (
-                        <Badge key={album.id} size="xs" className="truncate">{album.name}</Badge>
+                        <Badge key={album.id} size="xs" className="truncate">{album.title}</Badge>
                     ))}
                     <Badge size="xs" className="flex-1">+ {amountOfRestAlbums}</Badge>
                 </div>

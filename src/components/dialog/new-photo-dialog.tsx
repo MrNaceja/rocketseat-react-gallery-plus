@@ -6,24 +6,31 @@ import z4 from "zod/v4"
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { TextField } from "@/components/ui/text-field";
 import { acceptedTypes as imageUploadAcceptedTypes, UploadImageField } from "@/components/ui/upload-image-field";
+import { useFetchAlbumsQuery } from "@/hooks/use-fetch-albums-query";
 
 const newPhotoFormSchema = z4.object({
     title: z4.string(),
     photo: z4.file(),
-    albums: z4.array(z4.string())
+    albums: z4.array(z4.object({
+        id: z4.string(),
+        title: z4.string()
+    }))
 })
 
 type NewPhotoFormSchema = z4.infer<typeof newPhotoFormSchema>
 
 export function NewPhotoDialog({ children: trigger }: PropsWithChildren) {
+    const { albums, isLoading: isLoadingAlbums } = useFetchAlbumsQuery()
+
     const newPhotoForm = useForm<NewPhotoFormSchema>({
         resolver: zodResolver(newPhotoFormSchema),
         defaultValues: {
             title: "",
-            albums: []
+            albums: albums
         }
     })
 
@@ -50,11 +57,11 @@ export function NewPhotoDialog({ children: trigger }: PropsWithChildren) {
                             <Text>Você pode selecionar apenas arquivos de imagem nos formatos {imageUploadAcceptedTypes.map(type => type.replace("image/", "")).join(", ")}</Text>
                         </Alert>
 
-                        <Controller 
+                        <Controller
                             control={newPhotoForm.control}
                             name="photo"
                             render={({ field }) => (
-                                <UploadImageField 
+                                <UploadImageField
                                     {...field}
                                 />
                             )}
@@ -64,9 +71,17 @@ export function NewPhotoDialog({ children: trigger }: PropsWithChildren) {
                             <Text variant="label-medium">Selecionar álbuns</Text>
                             <ul className="flex flex-wrap gap-3">
                                 {
-                                    Array.from({ length: 5 }).map((_, idx) => (
-                                        <Button key={idx} variant="ghost" size="sm">Album {idx + 1}</Button>
-                                    ))
+                                    isLoadingAlbums
+                                        ? (
+                                            Array.from({ length: 5 }).map((_, idx) => (
+                                                <Skeleton key={idx} rounded="sm" className="h-7 w-20" />
+                                            ))
+                                        )
+                                        : (
+                                            albums.map((album) => (
+                                                <Button key={album.id} variant="ghost" size="sm">{album.title}</Button>
+                                            ))
+                                        )
                                 }
                             </ul>
                         </div>
