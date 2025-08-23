@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Text } from "@/components/ui/text"
 import { Route as PhotoDetailsRoute } from "@/routes/photos.$photoId"
 import type { Photo } from "@/services/gallery-plus/photo.service"
+import { createPhotoUrl } from "@/utils/create-photo-url"
 
 const AMOUNT_DISPLAYED_ALBUMS = 2
 
@@ -17,18 +18,20 @@ export function PhotoCard({ photo }: PhotoCardProps) {
     return (
         <div className="flex flex-col gap-4">
             <img
-                alt={photo.name}
-                src={photo.url}
+                alt={photo.title}
+                src={createPhotoUrl(photo.imageId)}
                 className="rounded-lg size-44 aspect-square object-cover"
             />
 
             <span className="flex flex-col gap-2">
-                <Text variant="label-medium" className="text-accent-paragraph truncate">{photo.name}</Text>
+                <Text variant="label-medium" className="text-accent-paragraph truncate">{photo.title}</Text>
                 <div className="flex flex-wrap gap-2 items-center">
                     {displayedAlbums.map(album => (
                         <Badge key={album.id} size="xs" className="truncate">{album.title}</Badge>
                     ))}
-                    <Badge size="xs" className="flex-1">+ {amountOfRestAlbums}</Badge>
+                    {amountOfRestAlbums > 0 && (
+                        <Badge size="xs" className="flex-1">+ {amountOfRestAlbums}</Badge>
+                    )}
                 </div>
             </span>
 

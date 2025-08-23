@@ -9,46 +9,61 @@ import { Divider } from "@/components/ui/divider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Text } from "@/components/ui/text"
 import { useFetchAlbumsQuery } from "@/hooks/use-fetch-albums-query"
+import { useFindPhotoByIdWithPagintorQuery } from "@/hooks/use-find-photo-by-id-with-paginator-query"
+import type { Photo } from "@/services/gallery-plus/photo.service"
+import { createPhotoUrl } from "@/utils/create-photo-url"
 
 export const Route = createFileRoute('/photos/$photoId')({
     component: function PhotoDetailsPage() {
         const { photoId } = Route.useParams()
         const { albums, isLoading: isLoadingAlbums } = useFetchAlbumsQuery()
+        const { photoWithPaginator, isLoading: isFindingPhoto } = useFindPhotoByIdWithPagintorQuery({ id: photoId })
+        const navigator = Route.useNavigate()
 
-        const photo = {
-            id: photoId,
-            name: `Photo ${photoId}`,
-            url: "https://picsum.photos/600/400",
-            albums: Array.from({ length: 5 }).map((_, idxAlbum) => ({
-                id: String(idxAlbum + 1),
-                title: `Album ${idxAlbum + 1}`
-            }))
+        const isNotInteractive = isFindingPhoto || isLoadingAlbums
+        const hasNextPhoto = !!photoWithPaginator?.nextPhotoId
+        const hasPreviousPhoto = !!photoWithPaginator?.previousPhotoId
+
+        const navigateToAnotherPhoto = (photoId: Photo["id"]) => {
+            navigator({ to: "/photos/$photoId", params: { photoId} })
         }
 
-        const isLoading = false
+        const handlePaginateToNextPhoto = () => {
+            if ( hasNextPhoto ) {
+                navigateToAnotherPhoto(photoWithPaginator.nextPhotoId)
+            }
+        }
+
+        const handlePaginateToPreviousPhoto = () => {
+            if ( hasPreviousPhoto ) {
+                navigateToAnotherPhoto(photoWithPaginator.previousPhotoId)
+            }
+        }
 
         return (
             <section className="flex flex-col gap-5">
                 <div className="flex items-center justify-between gap-3">
                     {
-                        isLoading
+                        isNotInteractive
                             ? (
                                 <Skeleton rounded="sm" className="w-56 h-12" />
                             )
                             : (
-                                <Text variant="heading-large" className="text-heading">{photo.name}</Text>
+                                <Text variant="heading-large" className="text-heading">{photoWithPaginator?.title}</Text>
                             )
                     }
                     <span className="flex items-center gap-2">
                         <ButtonIcon
                             variant="secondary"
                             icon={PreviousIcon}
-                            disabled={isLoading}
+                            disabled={isNotInteractive || !hasPreviousPhoto}
+                            onClick={handlePaginateToPreviousPhoto}
                         />
                         <Button
                             variant="secondary"
                             icon={NextIcon}
-                            disabled={isLoading}
+                            disabled={isNotInteractive || !hasNextPhoto}
+                            onClick={handlePaginateToNextPhoto}
                         >
                             Próxima imagem
                         </Button>
@@ -58,27 +73,27 @@ export const Route = createFileRoute('/photos/$photoId')({
                 <div className="flex items-start gap-3 justify-between">
                     <span className="flex flex-col gap-3 items-start">
                         {
-                            isLoading
+                            isNotInteractive
                                 ? (
                                     <Skeleton rounded="lg" className="size-96 aspect-square" />
                                 )
                                 : (
                                     <img
-                                        src={photo.url}
-                                        alt={photo.name}
-                                        title={photo.name}
+                                        src={photoWithPaginator ? createPhotoUrl(photoWithPaginator.imageId) : ""}
+                                        alt={photoWithPaginator?.title}
+                                        title={photoWithPaginator?.title}
                                         className="size-96 object-cover aspect-square rounded-lg"
                                     />
                                 )
                         }
-                        <Button variant="destructive" disabled={isLoading}>Excluir</Button>
+                        <Button variant="destructive" disabled={isNotInteractive}>Excluir</Button>
                     </span>
 
                     <div className="flex flex-col gap-7 min-w-sm">
                         <Text variant="heading-small">Albums</Text>
                         <ul className="space-y-5">
                             {
-                                isLoadingAlbums
+                                isNotInteractive
                                     ? (
                                         Array.from({ length: 4 }).map((_, idx) => (
                                             <Skeleton key={idx} rounded="sm" className="h-16 w-full"/>

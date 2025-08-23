@@ -1,31 +1,44 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { AlbumsSelectorFilter } from "@/components/albums-selector-filter"
-import { PhotoCard } from "@/components/photo-card"
+import { PhotoCard, PhotoCardSkeleton } from "@/components/photo-card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Text } from "@/components/ui/text"
-import type { Photo } from "@/services/gallery-plus/photo.service"
+import { useFetchPhotosQuery } from "@/hooks/use-fetch-photos-query"
 
-const photos: Photo[] = Array.from({ length: 15 }).map((_, idx) => ({
-  id: String(idx + 1),
-  name: `Photo ${idx + 1}`,
-  url: "https://picsum.photos/600/400",
-  albums: Array.from({ length: 5 }).map((_, idxAlbum) => ({
-    id: String(idxAlbum + 1),
-    title: `Album ${idxAlbum + 1}`
-  }))
-}))
 
 export const Route = createFileRoute('/')({
   component: function IndexPage() {
+    const { photos, isLoading: isLoadingPhotos } = useFetchPhotosQuery()
+
     return (
       <section className="flex flex-col gap-6">
         <AlbumsSelectorFilter />
-        <Text variant="label-small" className="text-accent-span text-right">Total: {photos.length}</Text>
+        <span className="self-end">
+          {
+            isLoadingPhotos
+              ? (
+                <Skeleton rounded="sm" className="h-5 w-28" />
+              )
+              : (
+
+                <Text variant="label-small" className="text-accent-span">Total: {photos.length}</Text>
+              )
+          }
+        </span>
         <div className="grid grid-cols-5 gap-9">
           {
-            photos.map(photo => (
-              <PhotoCard photo={photo} />
-            ))
+            isLoadingPhotos
+              ? (
+                Array.from({ length: 8 }).map((_, idx) => (
+                  <PhotoCardSkeleton key={idx} />
+                ))
+              )
+              : (
+                photos.map(photo => (
+                  <PhotoCard photo={photo} key={photo.id} />
+                ))
+              )
           }
         </div>
       </section>

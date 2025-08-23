@@ -1,12 +1,28 @@
 import type { Album } from "@/services/gallery-plus/album.service"
+import { api } from "@/services/gallery-plus/api"
 
 export interface Photo {
     id: string,
     url: string,
-    name: string,
+    title: string,
+    imageId: string,
     albums: Album[]
 }
 
-export const PhotoService = {
+export type FetchPhotosResponse = Photo[]
+export type FindPhotoByIdWithPaginatorResponse = Photo & {
+    nextPhotoId: Photo["id"]
+    previousPhotoId: Photo["id"]
+}
+export type FindPhotoByIdWithPaginatorPayload = Pick<Photo, "id">
 
+export const PhotoService = {
+    async fetchPhotos() {
+        const result = await api.get<FetchPhotosResponse>("/photos")
+        return result.data
+    },
+    async findPhotoByIdWithPaginator({ id }: FindPhotoByIdWithPaginatorPayload) {
+        const result = await api.get<FindPhotoByIdWithPaginatorResponse>(`/photos/${id}`)
+        return result.data
+    }
 }
