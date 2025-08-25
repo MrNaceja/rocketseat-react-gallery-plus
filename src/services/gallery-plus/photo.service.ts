@@ -10,6 +10,10 @@ export interface Photo {
 }
 
 export type FetchPhotosResponse = Photo[]
+export type FetchPhotosPayload = {
+    albumId?: string,
+    q?: string
+}
 export type FindPhotoByIdWithPaginatorResponse = Photo & {
     nextPhotoId: Photo["id"]
     previousPhotoId: Photo["id"]
@@ -17,8 +21,13 @@ export type FindPhotoByIdWithPaginatorResponse = Photo & {
 export type FindPhotoByIdWithPaginatorPayload = Pick<Photo, "id">
 
 export const PhotoService = {
-    async fetchPhotos() {
-        const result = await api.get<FetchPhotosResponse>("/photos")
+    async fetchPhotos({ albumId, q }: FetchPhotosPayload) {
+        const result = await api.get<FetchPhotosResponse>("/photos", {
+            params: {
+                albumId,
+                q
+            }
+        })
         return result.data
     },
     async findPhotoByIdWithPaginator({ id }: FindPhotoByIdWithPaginatorPayload) {

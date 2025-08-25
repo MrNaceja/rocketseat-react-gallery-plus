@@ -18,14 +18,14 @@ export const Route = createFileRoute('/photos/$photoId')({
         const { photoId } = Route.useParams()
         const { albums, isLoading: isLoadingAlbums } = useFetchAlbumsQuery()
         const { photoWithPaginator, isLoading: isFindingPhoto } = useFindPhotoByIdWithPagintorQuery({ id: photoId })
-        const navigator = Route.useNavigate()
+        const navigate = Route.useNavigate()
 
         const isNotInteractive = isFindingPhoto || isLoadingAlbums
         const hasNextPhoto = !!photoWithPaginator?.nextPhotoId
         const hasPreviousPhoto = !!photoWithPaginator?.previousPhotoId
 
         const navigateToAnotherPhoto = (photoId: Photo["id"]) => {
-            navigator({ to: "/photos/$photoId", params: { photoId} })
+            navigate({ to: "/photos/$photoId", params: { photoId } })
         }
 
         const handlePaginateToNextPhoto = () => {
