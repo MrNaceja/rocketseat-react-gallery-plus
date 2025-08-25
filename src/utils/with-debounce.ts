@@ -1,4 +1,4 @@
-export const withDebounce = <T extends (...args: unknown[]) => void>(
+export const withDebounce = <T extends (...args: any[]) => void>(
   fn: T,
   delay: number = 2000
 ) => {
