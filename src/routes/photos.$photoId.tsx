@@ -104,7 +104,7 @@ export const Route = createFileRoute('/photos/$photoId')({
                                             <li key={album.id} className="flex flex-col gap-5">
                                                 <span className="flex items-center justify-between gap-3">
                                                     <Text variant="paragraph-medium" className="text-accent-paragraph">{album.title}</Text>
-                                                    <Checkbox />
+                                                    <Checkbox defaultChecked={photoWithPaginator?.albums.some(({ id }) => id === album.id)}/>
                                                 </span>
                                                 <Divider orientation="horizontal" />
                                             </li>

@@ -1,7 +1,7 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import type { PropsWithChildren } from "react";
-import { Controller, useForm } from "react-hook-form"
-import z4 from "zod/v4"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { type PropsWithChildren, useCallback, useState } from "react";
+import { Controller, type SubmitHandler, useForm } from "react-hook-form";
+import z4 from "zod/v4";
 
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -11,44 +11,62 @@ import { Text } from "@/components/ui/text";
 import { TextField } from "@/components/ui/text-field";
 import { acceptedTypes as imageUploadAcceptedTypes, UploadImageField } from "@/components/ui/upload-image-field";
 import { useFetchAlbumsQuery } from "@/hooks/use-fetch-albums-query";
+import { useNewPhotoMutation } from "@/hooks/use-new-photo-mutation";
 
 const newPhotoFormSchema = z4.object({
     title: z4.string(),
     photo: z4.file(),
-    albums: z4.array(z4.object({
-        id: z4.string(),
-        title: z4.string()
-    }))
+    albums: z4.array(z4.uuid())
 })
 
 type NewPhotoFormSchema = z4.infer<typeof newPhotoFormSchema>
 
 export function NewPhotoDialog({ children: trigger }: PropsWithChildren) {
     const { albums, isLoading: isLoadingAlbums } = useFetchAlbumsQuery()
+    const [open, setOpen] = useState(false)
+
+    const { newPhoto, isPending: isCreatingNewPhoto } = useNewPhotoMutation()
 
     const newPhotoForm = useForm<NewPhotoFormSchema>({
         resolver: zodResolver(newPhotoFormSchema),
         defaultValues: {
             title: "",
-            albums: albums
-        }
+            albums: []
+        },
+        disabled: isCreatingNewPhoto
     })
 
+    const closeDialog = useCallback(() => {
+        newPhotoForm.reset()
+        setOpen(false)
+    }, [newPhotoForm])
+
+    const handleCreateNewPhoto = useCallback<SubmitHandler<NewPhotoFormSchema>>(async ({ title, photo, albums }) => {
+        await newPhoto({
+            title,
+            image: photo,
+            albumsId: albums
+        })
+        closeDialog()
+    }, [newPhoto, closeDialog])
+
     return (
-        <Dialog.Root>
+        <Dialog.Root open={open} onOpenChange={setOpen}>
             <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
 
             <Dialog.Content className="max-w-xl">
-                <Dialog.Header>
-                    <Dialog.Title>Adicionar foto</Dialog.Title>
-                    <Dialog.Close />
-                </Dialog.Header>
+                <form onSubmit={newPhotoForm.handleSubmit(handleCreateNewPhoto)}>
+                    <Dialog.Header>
+                        <Dialog.Title>Adicionar foto</Dialog.Title>
+                        <Dialog.Description className="sr-only">Adicionar nova foto</Dialog.Description>
+                        <Dialog.Close />
+                    </Dialog.Header>
 
-                <Dialog.Body>
-                    <form className="flex flex-col gap-5">
+                    <Dialog.Body className="flex flex-col gap-5">
                         <TextField
                             placeholder="Adicione um titulo"
                             className="w-full"
+                            required
                             {...newPhotoForm.register("title")}
                         />
                         <Alert>
@@ -63,37 +81,63 @@ export function NewPhotoDialog({ children: trigger }: PropsWithChildren) {
                             render={({ field }) => (
                                 <UploadImageField
                                     {...field}
+                                    required
                                 />
                             )}
                         />
 
                         <div className="flex flex-col gap-3">
                             <Text variant="label-medium">Selecionar álbuns</Text>
-                            <ul className="flex flex-wrap gap-3">
-                                {
-                                    isLoadingAlbums
-                                        ? (
-                                            Array.from({ length: 5 }).map((_, idx) => (
-                                                <Skeleton key={idx} rounded="sm" className="h-7 w-20" />
-                                            ))
-                                        )
-                                        : (
-                                            albums.map((album) => (
-                                                <Button key={album.id} variant="ghost" size="sm">{album.title}</Button>
-                                            ))
-                                        )
-                                }
-                            </ul>
+                            <Controller
+                                control={newPhotoForm.control}
+                                name="albums"
+                                render={({ field }) => (
+                                    <ul className="flex flex-wrap gap-3">
+                                        {
+                                            isLoadingAlbums
+                                                ? (
+                                                    Array.from({ length: 5 }).map((_, idx) => (
+                                                        <Skeleton key={idx} rounded="sm" className="h-7 w-20" />
+                                                    ))
+                                                )
+                                                : (
+                                                    albums.map((album) => (
+                                                        <Button
+                                                            disabled={field.disabled}
+                                                            key={album.id}
+                                                            variant={field.value.includes(album.id) ? "primary" : "ghost"}
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                let newFields = field.value
+                                                                if (field.value.includes(album.id)) {
+                                                                    newFields = newFields.filter(albumId => albumId != album.id)
+                                                                }
+                                                                else {
+                                                                    newFields = newFields.concat([album.id])
+                                                                }
+                                                                field.onChange(newFields)
+                                                            }}
+                                                        >
+                                                            {album.title}
+                                                        </Button>
+                                                    ))
+                                                )
+                                        }
+                                    </ul>
+                                )}
+                            />
                         </div>
-                    </form>
-                </Dialog.Body>
+                    </Dialog.Body>
 
-                <Dialog.Footer>
-                    <Dialog.Dismiss>
-                        <Button variant="secondary">Cancelar</Button>
-                    </Dialog.Dismiss>
-                    <Button variant="primary">Adicionar</Button>
-                </Dialog.Footer>
+                    <Dialog.Footer>
+                        <Dialog.Dismiss asChild>
+                            <Button variant="secondary" disabled={isCreatingNewPhoto}>Cancelar</Button>
+                        </Dialog.Dismiss>
+                        <Button variant="primary" type="submit" disabled={isCreatingNewPhoto} handling={isCreatingNewPhoto}>
+                            { isCreatingNewPhoto ? "Adicionando..." : "Adicionar" }
+                        </Button>
+                    </Dialog.Footer>
+                </form>
             </Dialog.Content>
         </Dialog.Root>
     )

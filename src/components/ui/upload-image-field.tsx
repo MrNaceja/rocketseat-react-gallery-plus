@@ -1,9 +1,9 @@
 import {
     type ComponentProps,
     createContext,
-    type RefObject,
     useContext,
     useRef,
+    useState,
 } from "react";
 
 import ImageIcon from "@/assets/icons/image.svg?react";
@@ -13,15 +13,18 @@ import { Text, textVariants } from "@/components/ui/text";
 
 export const acceptedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 
+type UploadImageFieldErrors = {
+    exceedMaxUploadSize: boolean
+}
+
 type UploadImageFieldContextState = {
-    inputRef: RefObject<HTMLInputElement | null>;
     inputProps: ComponentProps<"input">
     value?: File;
     attach: (file?: File) => void;
     detach: () => void;
-    errors: {
-        exceedMaxUploadSize: boolean
-    }
+    errors: UploadImageFieldErrors
+    setErrors: (errors: UploadImageFieldErrors) => void,
+    maxUploadSizeMB: number
 };
 
 const UploadImageFieldContext = createContext(
@@ -36,10 +39,9 @@ interface UploadImageFieldProps extends Omit<ComponentProps<"input">, "onChange"
     maxUploadSizeMB?: number
 }
 export function UploadImageField({ value, onChange, maxUploadSizeMB = 1, ...inputProps }: UploadImageFieldProps) {
-    const inputRef = useRef<HTMLInputElement>(null);
-
-    const maxFileSizeBytes = (maxUploadSizeMB * 1024 * 1024)
-    const isExceededMaxUploadSize = (!!value && (value.size > maxFileSizeBytes))
+    const [errors, setErrors] = useState<UploadImageFieldErrors>({
+        exceedMaxUploadSize: false
+    })
 
     const attach = (file?: File) => {
         onChange(file)
@@ -49,28 +51,21 @@ export function UploadImageField({ value, onChange, maxUploadSizeMB = 1, ...inpu
         onChange(undefined);
     };
 
-    if (isExceededMaxUploadSize) {
-        if (inputRef.current) {
-            inputRef.current.value = ""
-        }
-    }
-
     return (
         <UploadImageFieldContext.Provider
             value={{
-                inputRef,
                 value,
                 attach,
                 detach,
                 inputProps,
-                errors: {
-                    exceedMaxUploadSize: isExceededMaxUploadSize
-                }
+                errors,
+                setErrors,
+                maxUploadSizeMB
             }}
         >
             <section>
                 {
-                    (!value || isExceededMaxUploadSize)
+                    (!value || errors.exceedMaxUploadSize)
                         ? <UploadArea />
                         : (
                             <>
@@ -85,10 +80,24 @@ export function UploadImageField({ value, onChange, maxUploadSizeMB = 1, ...inpu
 }
 
 function UploadArea() {
-    const { inputRef, attach, inputProps, errors } = useUploadImageField();
+    const { attach, inputProps, errors, setErrors, maxUploadSizeMB } = useUploadImageField();
+    const inputFileRef = useRef<HTMLInputElement>(null)
 
     const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+        const maxFileSizeBytes = (maxUploadSizeMB * 1024 * 1024)
+        const isExceededMaxUploadSize = (!!file && (file.size > maxFileSizeBytes))
+        setErrors({
+            exceedMaxUploadSize: isExceededMaxUploadSize
+        })
+
+        if (isExceededMaxUploadSize) {
+            if (inputFileRef.current) {
+                inputFileRef.current.value = ""
+            }
+            return;
+        }
+
         attach(file);
     };
 
@@ -100,12 +109,12 @@ function UploadArea() {
             `}
         >
             <input
-                ref={inputRef}
+                {...inputProps}
+                ref={inputFileRef}
                 type="file"
                 className="size-full opacity-0 absolute inset-0 cursor-pointer"
                 accept={acceptedTypes.join(",")}
                 onChange={handleUpload}
-                {...inputProps}
             />
             <Icon svg={UploadIcon} className="fill-placeholder size-8" />
             <Text variant="label-medium" className="text-placeholder text-center">

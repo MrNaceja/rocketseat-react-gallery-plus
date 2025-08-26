@@ -91,6 +91,7 @@ function Body(props: ComponentProps<"main">) {
 export const Dialog = {
     Root: RadixDialog.Root,
     Trigger: RadixDialog.Trigger,
+    Description: RadixDialog.Description,
     Close,
     Dismiss,
     Title,
