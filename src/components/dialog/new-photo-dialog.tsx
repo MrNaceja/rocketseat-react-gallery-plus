@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type PropsWithChildren, useCallback, useState } from "react";
 import { Controller, type SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import z4 from "zod/v4";
 
 import { Alert } from "@/components/ui/alert";
@@ -42,12 +43,21 @@ export function NewPhotoDialog({ children: trigger }: PropsWithChildren) {
     }, [newPhotoForm])
 
     const handleCreateNewPhoto = useCallback<SubmitHandler<NewPhotoFormSchema>>(async ({ title, photo, albums }) => {
-        await newPhoto({
-            title,
-            image: photo,
-            albumsId: albums
-        })
-        closeDialog()
+        toast.promise(
+            newPhoto({
+                title,
+                image: photo,
+                albumsId: albums
+            }), { 
+                loading: "Adicionando foto...",
+                success() {
+                    closeDialog()
+                    return {
+                        message: "Foto adicionada com sucesso!"
+                    }
+                },
+                error: "Houve um erro ao adicionar a foto!",
+            })
     }, [newPhoto, closeDialog])
 
     return (
@@ -134,7 +144,7 @@ export function NewPhotoDialog({ children: trigger }: PropsWithChildren) {
                             <Button variant="secondary" disabled={isCreatingNewPhoto}>Cancelar</Button>
                         </Dialog.Dismiss>
                         <Button variant="primary" type="submit" disabled={isCreatingNewPhoto} handling={isCreatingNewPhoto}>
-                            { isCreatingNewPhoto ? "Adicionando..." : "Adicionar" }
+                            {isCreatingNewPhoto ? "Adicionando..." : "Adicionar"}
                         </Button>
                     </Dialog.Footer>
                 </form>
