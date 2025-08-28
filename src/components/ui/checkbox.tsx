@@ -9,21 +9,32 @@ const checkboxWrapperVariants = tv({
     variants: {
         size: {
             md: "size-4"
+        },
+        disabled: {
+            false: "",
+            true: "pointer-events-none"
         }
     },
     defaultVariants: {
-        size: "md"
+        size: "md",
+        disabled: false
     }
 })
 
-interface CheckboxProps extends Omit<ComponentProps<'input'>, "size">, VariantProps<typeof checkboxWrapperVariants> { }
-export function Checkbox({ id, size, className, ...inputProps }: CheckboxProps) {
+interface CheckboxProps extends Omit<ComponentProps<'input'>, "size" | "onChange">, VariantProps<typeof checkboxWrapperVariants> {
+    onChange?: (checked: boolean) => void
+}
+export function Checkbox({ id, size, className, checked, onChange, disabled, ...inputProps }: CheckboxProps) {
     const defaultId = useId()
     id = id ?? defaultId
 
+    const handleCheckChange = () => {
+        onChange?.(!checked)
+    }
+
     return (
-        <label htmlFor={id} className={checkboxWrapperVariants({ size, className })}>
-            <input id={id} type="checkbox" {...inputProps} className="appearance-none peer" />
+        <label htmlFor={id} className={checkboxWrapperVariants({ size, disabled, className })}>
+            <input id={id} type="checkbox" {...inputProps} disabled={disabled} className="appearance-none peer" onChange={handleCheckChange}/>
             <Icon
                 svg={CheckIcon}
                 className="fill-white size-3 not-peer-checked:hidden"

@@ -1,26 +1,27 @@
-import {z} from "zod";
+import { z } from "zod";
 
 // Zod schemas for validation
 export const createPhotoSchema = z.object({
-	title: z.string().min(1).max(255),
-	albumsIds: z.array(z.string().uuid()).optional(),
+    title: z.string().min(1).max(255),
+    albumsIds: z.array(z.string().uuid()).optional(),
 });
 
 export const updatePhotoSchema = z.object({
-	title: z.string().min(1).max(255),
+    title: z.string().min(1).max(255),
 });
 
 export const photoParamsSchema = z.object({
-	id: z.string().uuid(),
+    id: z.string().uuid(),
 });
 
 export const photoQuerySchema = z.object({
-	albumId: z.string().uuid().optional(),
-	q: z.string().optional(),
+    albumId: z.string().uuid().optional(),
+    q: z.string().optional(),
 });
 
 export const managePhotoAlbumsSchema = z.object({
-	albumsIds: z.array(z.string().uuid()),
+    albumsIds: z.array(z.string().uuid()),
+    overrideExistentAlbums: z.boolean().default(true)
 });
 
 // TypeScript types derived from schemas

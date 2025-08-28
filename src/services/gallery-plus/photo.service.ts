@@ -21,11 +21,14 @@ export type FindPhotoByIdWithPaginatorResponse = Photo & {
 export type FindPhotoByIdWithPaginatorPayload = Pick<Photo, "id">
 export type CreatePhotoPayload = Pick<Photo, "title">
 export type UploadPhotoImagePayload = Pick<Photo, "id"> & { image: File }
-export type ManagePhotoAlbumsPayload = Pick<Photo, "id"> & { albumsId: Album["id"][] }
+export type ManagePhotoAlbumsPayload = Pick<Photo, "id"> & {
+    albumsIds: Album["id"][], 
+    overrideExistentAlbums?: boolean
+}
 export type NewPhotoPayload = {
     title: Photo["title"],
     image: File,
-    albumsId: Album["id"][] 
+    albumsIds: Album["id"][] 
 }
 export const PhotoService = {
     async fetchPhotos({ albumId, q }: FetchPhotosPayload) {
@@ -52,13 +55,13 @@ export const PhotoService = {
             }
         })
     },
-    async managePhotoAlbums({ id, albumsId }: ManagePhotoAlbumsPayload) {
-        if ( albumsId.length < 1 ) return
-        await api.put(`/photos/${id}/albums`, { albumsId })
+    async managePhotoAlbums({ id, albumsIds, overrideExistentAlbums = false }: ManagePhotoAlbumsPayload) {
+        if ( albumsIds.length < 1 ) return
+        await api.put(`/photos/${id}/albums`, { albumsIds, overrideExistentAlbums })
     },
-    async newPhoto({ title, image, albumsId }: NewPhotoPayload) {
+    async newPhoto({ title, image, albumsIds }: NewPhotoPayload) {
         const newPhoto = await PhotoService.createPhoto({ title })
         await PhotoService.uploadPhotoImage({ id: newPhoto.id, image })
-        await PhotoService.managePhotoAlbums({ id: newPhoto.id, albumsId })
+        await PhotoService.managePhotoAlbums({ id: newPhoto.id, albumsIds })
     }
 }

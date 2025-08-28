@@ -7,6 +7,7 @@ import z4 from "zod/v4";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { TextField } from "@/components/ui/text-field";
@@ -42,23 +43,25 @@ export function NewPhotoDialog({ children: trigger }: PropsWithChildren) {
         setOpen(false)
     }, [newPhotoForm])
 
-    const handleCreateNewPhoto = useCallback<SubmitHandler<NewPhotoFormSchema>>(async ({ title, photo, albums }) => {
+    const handleCreateNewPhoto = useCallback<SubmitHandler<NewPhotoFormSchema>>(({ title, photo, albums }) => {
         toast.promise(
             newPhoto({
                 title,
                 image: photo,
-                albumsId: albums
-            }), { 
-                loading: "Adicionando foto...",
-                success() {
-                    closeDialog()
-                    return {
-                        message: "Foto adicionada com sucesso!"
-                    }
-                },
-                error: "Houve um erro ao adicionar a foto!",
-            })
+                albumsIds: albums
+            }), {
+            loading: "Adicionando foto...",
+            success() {
+                closeDialog()
+                return {
+                    message: "Foto adicionada com sucesso!"
+                }
+            },
+            error: "Houve um erro ao adicionar a foto!",
+        })
     }, [newPhoto, closeDialog])
+
+    const hasAlbums = albums.length > 0
 
     return (
         <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -111,26 +114,34 @@ export function NewPhotoDialog({ children: trigger }: PropsWithChildren) {
                                                     ))
                                                 )
                                                 : (
-                                                    albums.map((album) => (
-                                                        <Button
-                                                            disabled={field.disabled}
-                                                            key={album.id}
-                                                            variant={field.value.includes(album.id) ? "primary" : "ghost"}
-                                                            size="sm"
-                                                            onClick={() => {
-                                                                let newFields = field.value
-                                                                if (field.value.includes(album.id)) {
-                                                                    newFields = newFields.filter(albumId => albumId != album.id)
-                                                                }
-                                                                else {
-                                                                    newFields = newFields.concat([album.id])
-                                                                }
-                                                                field.onChange(newFields)
-                                                            }}
-                                                        >
-                                                            {album.title}
-                                                        </Button>
-                                                    ))
+                                                    hasAlbums
+                                                        ? (
+                                                            albums.map((album) => (
+                                                                <Button
+                                                                    disabled={field.disabled}
+                                                                    key={album.id}
+                                                                    variant={field.value.includes(album.id) ? "primary" : "ghost"}
+                                                                    size="sm"
+                                                                    onClick={() => {
+                                                                        let newFields = field.value
+                                                                        if (field.value.includes(album.id)) {
+                                                                            newFields = newFields.filter(albumId => albumId != album.id)
+                                                                        }
+                                                                        else {
+                                                                            newFields = newFields.concat([album.id])
+                                                                        }
+                                                                        field.onChange(newFields)
+                                                                    }}
+                                                                >
+                                                                    {album.title}
+                                                                </Button>
+                                                            ))
+                                                        )
+                                                        : (
+                                                            <EmptyState>
+                                                               Nenhum álbum disponível para seleção
+                                                            </EmptyState>
+                                                        )
                                                 )
                                         }
                                     </ul>

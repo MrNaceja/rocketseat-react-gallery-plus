@@ -1,12 +1,16 @@
-import EmptyStateIlustration from "@/assets/images/select-checkbox.svg?react"
 import { Checkbox } from "@/components/ui/checkbox";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { useFetchPhotosQuery } from "@/hooks/use-fetch-photos-query";
 import type { Photo } from "@/services/gallery-plus/photo.service";
 import { createPhotoUrl } from "@/utils/create-photo-url";
 
-export function PhotoPickerSelector() {
+interface PhotoPickerSelectorProps {
+    value: Photo["id"][],
+    onSelect: (selected: Photo["id"][]) => void
+}
+export function PhotoPickerSelector({ value, onSelect }: PhotoPickerSelectorProps) {
     const { photos, isLoading: isLoadingPhotos } = useFetchPhotosQuery()
     const hasPhotos = photos.length > 0
 
@@ -25,10 +29,29 @@ export function PhotoPickerSelector() {
                             hasPhotos
                                 ? (
                                     photos.map((photo) => (
-                                        <PhotoSelection key={photo.id} photo={photo} />
+                                        <PhotoSelection 
+                                            key={photo.id} 
+                                            photo={photo} 
+                                            selected={value.includes(photo.id)}
+                                            onSelectChange={(selected) => {
+                                                let photosSelected = value
+                                                if ( selected ) {
+                                                    photosSelected.push(photo.id)
+                                                }
+                                                else {
+                                                    photosSelected = photosSelected.filter(id => id !== photo.id)
+                                                }
+                                                
+                                                onSelect(photosSelected)
+                                            }}
+                                        />
                                     ))
                                 )
-                                : <NoPhotosAvailableEmptyState />
+                                : (
+                                    <EmptyState>
+                                        Nenhuma foto disponível para seleção
+                                    </EmptyState>
+                                )
                         )
                 }
             </ul>
@@ -37,26 +60,25 @@ export function PhotoPickerSelector() {
 }
 
 interface PhotoSelectionProps {
-    photo: Photo
+    photo: Photo,
+    selected?: boolean,
+    onSelectChange?: (selected: boolean) => void
 }
-function PhotoSelection({ photo }: PhotoSelectionProps) {
+function PhotoSelection({ photo, selected = false, onSelectChange }: PhotoSelectionProps) {
     return (
-        <span className="rounded aspect-square size-20 border-2 border-transparent relative overflow-hidden has-checked:border-accent-brand">
+        <span 
+            className="rounded aspect-square size-20 border-2 border-transparent relative overflow-hidden has-checked:border-accent-brand"
+        >
             <img
                 src={createPhotoUrl(photo.imageId)}
                 alt={photo.title}
                 className="size-full object-cover"
             />
-            <Checkbox className="absolute top-1.5 left-1.5" />
+            <Checkbox
+                className="absolute top-1.5 left-1.5"
+                checked={selected}
+                onChange={onSelectChange}
+            />
         </span>
-    )
-}
-
-function NoPhotosAvailableEmptyState() {
-    return (
-        <div className="flex flex-col size-full gap-3 items-center justify-center">
-            <EmptyStateIlustration />
-            <Text variant="paragraph-medium" className="text-accent-paragraph">Nenhuma foto disponível para seleção</Text>
-        </div>
     )
 }

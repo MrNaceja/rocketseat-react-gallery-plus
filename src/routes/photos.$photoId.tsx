@@ -1,4 +1,7 @@
+import { useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from '@tanstack/react-router'
+import { useMemo, useTransition } from "react"
+import { toast } from "sonner"
 
 import PreviousIcon from "@/assets/icons/chevron-left.svg?react"
 import NextIcon from "@/assets/icons/chevron-right.svg?react"
@@ -9,16 +12,20 @@ import { Divider } from "@/components/ui/divider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Text } from "@/components/ui/text"
 import { useFetchAlbumsQuery } from "@/hooks/use-fetch-albums-query"
-import { useFindPhotoByIdWithPagintorQuery } from "@/hooks/use-find-photo-by-id-with-paginator-query"
-import type { Photo } from "@/services/gallery-plus/photo.service"
+import { FETCH_PHOTOS_STATIC_QUERY_KEY } from "@/hooks/use-fetch-photos-query"
+import { FIND_PHOTO_BY_ID_WITH_PAGINATOR_STATIC_QUERY_KEY, useFindPhotoByIdWithPagintorQuery } from "@/hooks/use-find-photo-by-id-with-paginator-query"
+import type { Album } from "@/services/gallery-plus/album.service"
+import { type Photo, PhotoService } from "@/services/gallery-plus/photo.service"
 import { createPhotoUrl } from "@/utils/create-photo-url"
 
 export const Route = createFileRoute('/photos/$photoId')({
     component: function PhotoDetailsPage() {
+        const queryClient = useQueryClient()
         const { photoId } = Route.useParams()
         const { albums, isLoading: isLoadingAlbums } = useFetchAlbumsQuery()
         const { photoWithPaginator, isLoading: isFindingPhoto } = useFindPhotoByIdWithPagintorQuery({ id: photoId })
         const navigate = Route.useNavigate()
+        const [isManagingPhotoOnAlbum, startManagingPhotoOnAlbumTransition] = useTransition()
 
         const isNotInteractive = isFindingPhoto || isLoadingAlbums
         const hasNextPhoto = !!photoWithPaginator?.nextPhotoId
@@ -29,15 +36,51 @@ export const Route = createFileRoute('/photos/$photoId')({
         }
 
         const handlePaginateToNextPhoto = () => {
-            if ( hasNextPhoto ) {
+            if (hasNextPhoto) {
                 navigateToAnotherPhoto(photoWithPaginator.nextPhotoId)
             }
         }
 
         const handlePaginateToPreviousPhoto = () => {
-            if ( hasPreviousPhoto ) {
+            if (hasPreviousPhoto) {
                 navigateToAnotherPhoto(photoWithPaginator.previousPhotoId)
             }
+        }
+
+        const existentAlbumsOnPhotoIds = useMemo(() => photoWithPaginator?.albums.map(({ id }) => id) || [], [photoWithPaginator])
+
+        const checkIsPhotoOnAlbum = (albumId: Album["id"]) => existentAlbumsOnPhotoIds.some((photoAlbumId) => albumId === photoAlbumId)
+
+        const withHandleTogglePhotoOnAlbum = (albumId: Album["id"]) => () => {
+            const isPhotoOnAlbum = checkIsPhotoOnAlbum(albumId)
+
+            startManagingPhotoOnAlbumTransition(
+                async () => {
+                    await toast.promise(
+                        PhotoService.managePhotoAlbums({
+                            id: photoId,
+                            albumsIds: (
+                                !isPhotoOnAlbum 
+                                ? [...existentAlbumsOnPhotoIds, albumId] 
+                                : existentAlbumsOnPhotoIds.filter(photoAlbumId => photoAlbumId != albumId)
+                            ),
+                            overrideExistentAlbums: true
+                        }),
+                        {
+                            loading: !isPhotoOnAlbum ? "Adicionando foto ao álbum..." : "Removendo foto do álbum...",
+                            success: !isPhotoOnAlbum ? "Foto adicionado com sucesso ao álbum" : "Foto removida do álbum com sucesso",
+                            error  : !isPhotoOnAlbum ? "Houve um erro ao adicionar a foto ao álbum" : "Houve um erro ao remover a foto do álbum"
+                        }
+                    ).unwrap()
+
+                    queryClient.invalidateQueries({
+                        queryKey: [FIND_PHOTO_BY_ID_WITH_PAGINATOR_STATIC_QUERY_KEY, photoId]
+                    })
+                    queryClient.invalidateQueries({
+                        queryKey: [FETCH_PHOTOS_STATIC_QUERY_KEY]
+                    })
+                }
+            )
         }
 
         return (
@@ -96,7 +139,7 @@ export const Route = createFileRoute('/photos/$photoId')({
                                 isNotInteractive
                                     ? (
                                         Array.from({ length: 4 }).map((_, idx) => (
-                                            <Skeleton key={idx} rounded="sm" className="h-16 w-full"/>
+                                            <Skeleton key={idx} rounded="sm" className="h-16 w-full" />
                                         ))
                                     )
                                     : (
@@ -104,7 +147,11 @@ export const Route = createFileRoute('/photos/$photoId')({
                                             <li key={album.id} className="flex flex-col gap-5">
                                                 <span className="flex items-center justify-between gap-3">
                                                     <Text variant="paragraph-medium" className="text-accent-paragraph">{album.title}</Text>
-                                                    <Checkbox defaultChecked={photoWithPaginator?.albums.some(({ id }) => id === album.id)}/>
+                                                    <Checkbox
+                                                        disabled={isManagingPhotoOnAlbum}
+                                                        defaultChecked={checkIsPhotoOnAlbum(album.id)}
+                                                        onChange={withHandleTogglePhotoOnAlbum(album.id)}
+                                                    />
                                                 </span>
                                                 <Divider orientation="horizontal" />
                                             </li>

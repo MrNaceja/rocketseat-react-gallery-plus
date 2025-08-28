@@ -13,7 +13,8 @@ interface PhotoCardProps {
 }
 export function PhotoCard({ photo }: PhotoCardProps) {
     const displayedAlbums = photo.albums.slice(0, AMOUNT_DISPLAYED_ALBUMS)
-    const amountOfRestAlbums = photo.albums.slice(AMOUNT_DISPLAYED_ALBUMS).length
+    const restoOfAlbums = photo.albums.slice(AMOUNT_DISPLAYED_ALBUMS)
+    const amountOfRestAlbums = restoOfAlbums.length
 
     return (
         <div className="flex flex-col gap-4">
@@ -23,14 +24,14 @@ export function PhotoCard({ photo }: PhotoCardProps) {
                 className="rounded-lg size-44 aspect-square object-cover"
             />
 
-            <span className="flex flex-col gap-2">
+            <span className="flex flex-col gap-2 flex-1">
                 <Text variant="label-medium" className="text-accent-paragraph truncate">{photo.title}</Text>
                 <div className="flex flex-wrap gap-2 items-center">
                     {displayedAlbums.map(album => (
                         <Badge key={album.id} size="xs" className="truncate">{album.title}</Badge>
                     ))}
                     {amountOfRestAlbums > 0 && (
-                        <Badge size="xs" className="flex-1">+ {amountOfRestAlbums}</Badge>
+                        <Badge size="xs" className="flex-1" title={restoOfAlbums.map(({ title }) => title).join(", ")}>+ {amountOfRestAlbums}</Badge>
                     )}
                 </div>
             </span>
