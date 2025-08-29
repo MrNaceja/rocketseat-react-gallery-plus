@@ -5,6 +5,7 @@ import { toast } from "sonner"
 
 import PreviousIcon from "@/assets/icons/chevron-left.svg?react"
 import NextIcon from "@/assets/icons/chevron-right.svg?react"
+import { ConfirmDeletePhotoDialog } from "@/components/dialog/confirm-delete-photo-dialog"
 import { Button } from "@/components/ui/button"
 import { ButtonIcon } from "@/components/ui/button-icon"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -26,13 +27,14 @@ export const Route = createFileRoute('/photos/$photoId')({
         const { photoWithPaginator, isLoading: isFindingPhoto } = useFindPhotoByIdWithPagintorQuery({ id: photoId })
         const navigate = Route.useNavigate()
         const [isManagingPhotoOnAlbum, startManagingPhotoOnAlbumTransition] = useTransition()
+        const [isDeletingPhoto, startPhotoDeletationTransition] = useTransition()
 
-        const isNotInteractive = isFindingPhoto || isLoadingAlbums
+        const isNotInteractive = isFindingPhoto || isLoadingAlbums || isDeletingPhoto
         const hasNextPhoto = !!photoWithPaginator?.nextPhotoId
         const hasPreviousPhoto = !!photoWithPaginator?.previousPhotoId
 
         const navigateToAnotherPhoto = (photoId: Photo["id"]) => {
-            navigate({ to: "/photos/$photoId", params: { photoId } })
+            navigate({ to: Route.to, params: { photoId } })
         }
 
         const handlePaginateToNextPhoto = () => {
@@ -45,6 +47,15 @@ export const Route = createFileRoute('/photos/$photoId')({
             if (hasPreviousPhoto) {
                 navigateToAnotherPhoto(photoWithPaginator.previousPhotoId)
             }
+        }
+
+        const invalidatePhotosCache = () => {
+            queryClient.invalidateQueries({
+                queryKey: [FIND_PHOTO_BY_ID_WITH_PAGINATOR_STATIC_QUERY_KEY, photoId]
+            })
+            queryClient.invalidateQueries({
+                queryKey: [FETCH_PHOTOS_STATIC_QUERY_KEY]
+            })
         }
 
         const existentAlbumsOnPhotoIds = useMemo(() => photoWithPaginator?.albums.map(({ id }) => id) || [], [photoWithPaginator])
@@ -60,27 +71,34 @@ export const Route = createFileRoute('/photos/$photoId')({
                         PhotoService.managePhotoAlbums({
                             id: photoId,
                             albumsIds: (
-                                !isPhotoOnAlbum 
-                                ? [...existentAlbumsOnPhotoIds, albumId] 
-                                : existentAlbumsOnPhotoIds.filter(photoAlbumId => photoAlbumId != albumId)
+                                !isPhotoOnAlbum
+                                    ? [...existentAlbumsOnPhotoIds, albumId]
+                                    : existentAlbumsOnPhotoIds.filter(photoAlbumId => photoAlbumId != albumId)
                             ),
                             overrideExistentAlbums: true
                         }),
                         {
                             loading: !isPhotoOnAlbum ? "Adicionando foto ao álbum..." : "Removendo foto do álbum...",
                             success: !isPhotoOnAlbum ? "Foto adicionado com sucesso ao álbum" : "Foto removida do álbum com sucesso",
-                            error  : !isPhotoOnAlbum ? "Houve um erro ao adicionar a foto ao álbum" : "Houve um erro ao remover a foto do álbum"
+                            error: !isPhotoOnAlbum ? "Houve um erro ao adicionar a foto ao álbum" : "Houve um erro ao remover a foto do álbum"
                         }
                     ).unwrap()
 
-                    queryClient.invalidateQueries({
-                        queryKey: [FIND_PHOTO_BY_ID_WITH_PAGINATOR_STATIC_QUERY_KEY, photoId]
-                    })
-                    queryClient.invalidateQueries({
-                        queryKey: [FETCH_PHOTOS_STATIC_QUERY_KEY]
-                    })
+                    invalidatePhotosCache()
                 }
             )
+        }
+
+        const handleDeletePhoto = async () => {
+            startPhotoDeletationTransition(async () => {
+                await toast.promise(PhotoService.deletePhoto({ id: photoId }), {
+                    loading: "Excluindo foto...",
+                    success: "Foto excluida com sucesso",
+                    error: "Houve um problema ao excluir a foto"
+                }).unwrap()
+                invalidatePhotosCache()
+                navigate({ to: "/" })
+            })
         }
 
         return (
@@ -129,7 +147,9 @@ export const Route = createFileRoute('/photos/$photoId')({
                                     />
                                 )
                         }
-                        <Button variant="destructive" disabled={isNotInteractive}>Excluir</Button>
+                        <ConfirmDeletePhotoDialog onConfirm={handleDeletePhoto}>
+                            <Button variant="destructive" disabled={isNotInteractive}>Excluir</Button>
+                        </ConfirmDeletePhotoDialog>
                     </span>
 
                     <div className="flex flex-col gap-7 min-w-sm">

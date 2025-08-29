@@ -30,6 +30,7 @@ export type NewPhotoPayload = {
     image: File,
     albumsIds: Album["id"][] 
 }
+export type DeletePhotoPayload = Pick<Photo, "id">
 export const PhotoService = {
     async fetchPhotos({ albumId, q }: FetchPhotosPayload) {
         const result = await api.get<FetchPhotosResponse>("/photos", {
@@ -39,6 +40,9 @@ export const PhotoService = {
             }
         })
         return result.data
+    },
+    async deletePhoto({ id }: DeletePhotoPayload) {
+        await api.delete(`/photos/${id}`)
     },
     async findPhotoByIdWithPaginator({ id }: FindPhotoByIdWithPaginatorPayload) {
         const result = await api.get<FindPhotoByIdWithPaginatorResponse>(`/photos/${id}`)
